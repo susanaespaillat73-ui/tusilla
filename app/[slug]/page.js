@@ -30,6 +30,11 @@ export default async function BusinessPage({ params }) {
   if (!biz) notFound();
 
   const supabase = supabaseServer();
+  const [{ data: canBook }, { data: { user } }] = await Promise.all([
+    supabase.rpc('business_can_book', { p_slug: biz.slug }),
+    supabase.auth.getUser(),
+  ]);
+  const isOwner = user?.id === biz.owner_id;
   const [{ data: services }, { data: staff }] = await Promise.all([
     supabase.from('services').select('id,name,description,duration_min,price').eq('business_id', biz.id).eq('is_active', true).order('sort').order('created_at'),
     supabase.from('staff').select('id,name,role').eq('business_id', biz.id).eq('is_active', true).order('sort').order('created_at'),
@@ -59,9 +64,14 @@ export default async function BusinessPage({ params }) {
         <a className="link" href={waLink(biz.phone)} target="_blank" rel="noopener">WhatsApp {fmtPhone(biz.phone)}</a>
       </SiteHeader>
       <main className="wrap">
-        {!biz.is_published && (
+        {isOwner && !biz.is_published && (
           <p className="note warn" style={{ marginTop: 16 }}>
             Tu página está oculta. Solo tú la ves. Actívala en <Link href="/panel/ajustes">Ajustes</Link> para recibir reservas.
+          </p>
+        )}
+        {isOwner && biz.is_published && !canBook && (
+          <p className="note warn" style={{ marginTop: 16 }}>
+            Tu cuenta está vencida y tu página no está recibiendo reservas. Revisa <Link href="/panel/ajustes#plan">Mi plan</Link> para reactivarla.
           </p>
         )}
         <section className="biz-hero">
@@ -82,7 +92,13 @@ export default async function BusinessPage({ params }) {
           </div>
         </section>
 
-        {services?.length && staff?.length ? (
+        {!canBook ? (
+          <div className="empty-state" style={{ marginBottom: 48 }}>
+            <b>Este negocio no está recibiendo reservas en línea en este momento.</b>
+            <span>Puedes escribirle por WhatsApp al {fmtPhone(biz.phone)}.</span>
+            <a className="btn btn-wa btn-sm" href={waLink(biz.phone, `Hola ${biz.name}, quisiera hacer una cita.`)} target="_blank" rel="noopener">Escribir por WhatsApp</a>
+          </div>
+        ) : services?.length && staff?.length ? (
           <BookingWidget
             biz={{ slug: biz.slug, name: biz.name, max_days_ahead: biz.max_days_ahead, cancel_hours: biz.cancel_hours }}
             services={services}

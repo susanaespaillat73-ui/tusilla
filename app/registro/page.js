@@ -53,7 +53,7 @@ export default function Registro() {
           ) : (
             <form className="stack" onSubmit={submit}>
               <div className="stack tight">
-                <p className="eyebrow">Gratis para empezar</p>
+                <p className="eyebrow">15 días gratis · sin tarjeta</p>
                 <h2>Crea el link de reservas de tu negocio</h2>
               </div>
               <label className="field">Nombre del negocio

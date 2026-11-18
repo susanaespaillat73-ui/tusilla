@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { usePanel, useToast } from '@/components/panel/PanelContext';
+import PlanSection from '@/components/panel/PlanSection';
 import { CATEGORIES, digits, fmtPhone, slugInput, slugify, validPhone } from '@/lib/format';
 
 export default function Ajustes() {
@@ -59,6 +60,8 @@ export default function Ajustes() {
   return (
     <>
       <h1 style={{ fontSize: 'clamp(1.6rem,3.5vw,2.2rem)' }}>Ajustes</h1>
+
+      <PlanSection />
 
       <div className="card">
         <h3>Tu link de reservas</h3>

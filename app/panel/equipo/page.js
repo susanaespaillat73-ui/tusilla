@@ -1,11 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { usePanel, useCatalog, useToast } from '@/components/panel/PanelContext';
-import { DOW_LONG, WEEK_ORDER, drDate, fmtDateShort, fmtTime, timeShort, toISO } from '@/lib/format';
+import { DOW_LONG, WEEK_ORDER, drDate, fmtDateShort, fmtTime, friendlyDbError, timeShort, toISO } from '@/lib/format';
 
 export default function Equipo() {
-  const { supabase, biz } = usePanel();
-  const { services, staff, staffServices, loaded, reload } = useCatalog(supabase, biz.id);
+  const { supabase, biz, reloadAccount } = usePanel();
+  const { services, staff, staffServices, loaded, reload: reloadCatalog } = useCatalog(supabase, biz.id);
+  const reload = () => { reloadCatalog(); reloadAccount?.(); };
   const [open, setOpen] = useState(null);
   const [toast, setToast] = useToast();
   const [adding, setAdding] = useState(false);
@@ -18,7 +19,7 @@ export default function Equipo() {
     const { data, error } = await supabase.from('staff')
       .insert({ business_id: biz.id, name: newName.trim(), role: newRole.trim(), sort: staff.length })
       .select().single();
-    if (error) return setToast(error.message);
+    if (error) return setToast(friendlyDbError(error));
     await supabase.from('working_hours').insert([1, 2, 3, 4, 5, 6].map((d) => ({ staff_id: data.id, weekday: d, start_time: '09:00', end_time: '18:00' })));
     setNewName(''); setNewRole(''); setAdding(false); setOpen(data.id);
     setToast(`${data.name} agregada. Revisa su horario.`);
@@ -135,7 +136,7 @@ function StaffEditor({ supabase, st, services, staffServices, canDelete, onSaved
     const all = svcSel.length === services.length;
     const e5 = !all ? (await supabase.from('staff_services').insert(svcSel.map((id) => ({ staff_id: st.id, service_id: id })))).error : null;
     const err = e1 || e2 || e3 || e4 || e5;
-    if (err) return setError('No se pudo guardar: ' + err.message);
+    if (err) return setError(friendlyDbError(err));
     onSaved(`Cambios de ${info.name.trim()} guardados`);
   }
 

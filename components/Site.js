@@ -1,9 +1,10 @@
 import Link from 'next/link';
+import { BRAND, BRAND_MARK } from '@/lib/brand';
 
 export function Brand() {
   return (
-    <Link href="/" className="brand" aria-label="TuSilla, inicio">
-      <span className="brand-mark">TS</span>TuSilla
+    <Link href="/" className="brand" aria-label={`${BRAND}, inicio`}>
+      <span className="brand-mark">{BRAND_MARK}</span>{BRAND}
     </Link>
   );
 }
@@ -30,7 +31,7 @@ export function SiteFooter() {
   return (
     <footer className="site-foot">
       <div className="wrap">
-        <span>© {new Date().getFullYear()} TuSilla · Hecho en República Dominicana</span>
+        <span>© {new Date().getFullYear()} {BRAND} · Hecho en República Dominicana</span>
         <span className="row">
           <Link href="/registro">Registrar mi negocio</Link>
           <Link href="/entrar">Entrar al panel</Link>

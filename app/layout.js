@@ -1,13 +1,14 @@
 import './globals.css';
+import { BRAND } from '@/lib/brand';
 
 const site = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export const metadata = {
   metadataBase: new URL(site),
-  title: { default: 'TuSilla · Citas para estéticas, salones y barberías', template: '%s · TuSilla' },
+  title: { default: `${BRAND} · Citas para estéticas, salones y barberías`, template: `%s · ${BRAND}` },
   description:
     'Reserva tu cita en estéticas, salones y barberías de República Dominicana. Elige servicio, profesional y hora, y recibe la confirmación por WhatsApp.',
-  openGraph: { siteName: 'TuSilla', locale: 'es_DO', type: 'website' },
+  openGraph: { siteName: BRAND, locale: 'es_DO', type: 'website' },
 };
 
 export const viewport = {

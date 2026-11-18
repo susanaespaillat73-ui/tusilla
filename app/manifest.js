@@ -1,7 +1,9 @@
+import { BRAND } from '@/lib/brand';
+
 export default function manifest() {
   return {
-    name: 'TuSilla · Panel del negocio',
-    short_name: 'TuSilla',
+    name: `${BRAND} · Panel del negocio`,
+    short_name: BRAND,
     description: 'Agenda y reservas para estéticas, salones y barberías.',
     start_url: '/panel',
     display: 'standalone',

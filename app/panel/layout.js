@@ -6,6 +6,8 @@ import { supabaseBrowser } from '@/lib/supabase/client';
 import { PanelProvider } from '@/components/panel/PanelContext';
 import Onboarding from '@/components/panel/Onboarding';
 import { contrastText } from '@/lib/format';
+import AccountBanner from '@/components/panel/AccountBanner';
+import { BRAND, BRAND_MARK } from '@/lib/brand';
 
 const NAV = [
   ['/panel', 'Agenda'],
@@ -23,17 +25,26 @@ export default function PanelLayout({ children }) {
   const [user, setUser] = useState(null);
   const [biz, setBiz] = useState(null);
   const [state, setState] = useState('loading'); // loading | ready | onboarding | error
+  const [account, setAccount] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const loadAccount = useCallback(async () => {
+    const { data } = await supabase.rpc('my_account');
+    setAccount(data || null);
+  }, [supabase]);
 
   const loadBiz = useCallback(async () => {
     const { data: { user: u } } = await supabase.auth.getUser();
     if (!u) { router.replace('/entrar?next=' + encodeURIComponent(path)); return; }
     setUser(u);
+    supabase.rpc('am_i_admin').then(({ data: a }) => setIsAdmin(Boolean(a)));
     const { data, error } = await supabase.from('businesses').select('*').eq('owner_id', u.id).order('created_at').limit(1).maybeSingle();
     if (error) { setState('error'); return; }
     if (!data) { setState('onboarding'); return; }
     setBiz(data);
     setState('ready');
-  }, [supabase, router, path]);
+    loadAccount();
+  }, [supabase, router, path, loadAccount]);
 
   useEffect(() => { loadBiz(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
@@ -43,15 +54,16 @@ export default function PanelLayout({ children }) {
     router.refresh();
   }
 
-  const ctx = useMemo(() => ({ supabase, user, biz, setBiz, reloadBiz: loadBiz }), [supabase, user, biz, loadBiz]);
+  const ctx = useMemo(() => ({ supabase, user, biz, setBiz, reloadBiz: loadBiz, account, reloadAccount: loadAccount }), [supabase, user, biz, loadBiz, account, loadAccount]);
   const style = biz ? { '--accent': biz.accent, '--accent-ink': contrastText(biz.accent) } : undefined;
 
   return (
     <div style={style}>
       <header className="p-top">
         <div className="wrap p-row">
-          <Link href="/" className="brand"><span className="brand-mark">TS</span>{biz ? biz.name : 'TuSilla'}</Link>
+          <Link href="/" className="brand"><span className="brand-mark">{BRAND_MARK}</span>{biz ? biz.name : BRAND}</Link>
           <div className="row">
+            {isAdmin && <Link className="btn btn-sm btn-ghost" href="/admin">Administración</Link>}
             {biz && <Link className="btn btn-sm" href={`/${biz.slug}`} target="_blank">Ver mi página</Link>}
             {user && <button className="btn btn-sm btn-ghost" onClick={signOut}>Salir</button>}
           </div>
@@ -70,6 +82,7 @@ export default function PanelLayout({ children }) {
           <div className="note warn">No pudimos cargar tu negocio. Revisa tu conexión y <button className="btn btn-sm" onClick={loadBiz}>intenta de nuevo</button></div>
         )}
         {state === 'onboarding' && user && <Onboarding supabase={supabase} user={user} onDone={loadBiz} />}
+        {state === 'ready' && account && <AccountBanner account={account} bizName={biz.name} />}
         {state === 'ready' && <PanelProvider value={ctx}>{children}</PanelProvider>}
       </main>
     </div>

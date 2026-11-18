@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin, supabasePublic } from '@/lib/supabase/server';
 import { sendWhatsAppTemplate } from '@/lib/whatsapp';
 
-const KNOWN = ['slot_taken', 'invalid_phone', 'invalid_name', 'too_many_bookings', 'business_not_found', 'service_not_found'];
+const KNOWN = ['slot_taken', 'invalid_phone', 'invalid_name', 'too_many_bookings', 'business_not_found', 'business_inactive', 'service_not_found'];
 const isUuid = (v) => typeof v === 'string' && /^[0-9a-f-]{36}$/i.test(v);
 
 export async function POST(request) {

@@ -4,6 +4,7 @@ import { SiteHeader, SiteFooter } from '@/components/Site';
 import CitaActions from '@/components/CitaActions';
 import { supabasePublic } from '@/lib/supabase/server';
 import { STATUS, capitalize, contrastText, fmtDateLong, fmtPhone, fmtTime, money, waLink } from '@/lib/format';
+import { BRAND } from '@/lib/brand';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Tu cita', robots: { index: false } };
@@ -22,7 +23,7 @@ export default async function CitaPage({ params, searchParams }) {
     u.searchParams.set('text', `${a.service_name} · ${a.business_name}`);
     u.searchParams.set('dates', `${f(a.starts_at)}/${f(a.ends_at)}`);
     u.searchParams.set('location', [a.address, a.city].filter(Boolean).join(', '));
-    u.searchParams.set('details', `Cita reservada con TuSilla. Ver o cancelar: ${site}/cita/${params.token}`);
+    u.searchParams.set('details', `Cita reservada con ${BRAND}. Ver o cancelar: ${site}/cita/${params.token}`);
     return u.toString();
   })();
 

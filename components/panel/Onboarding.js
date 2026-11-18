@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { CATEGORIES, STARTER_SERVICES, digits, slugInput, slugify, validPhone } from '@/lib/format';
+import { SITE_HOST } from '@/lib/brand';
 
-const HOST = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/^https?:\/\//, '') || 'tusilla.do';
+const HOST = SITE_HOST;
 
 export default function Onboarding({ supabase, user, onDone }) {
   const m = user.user_metadata || {};

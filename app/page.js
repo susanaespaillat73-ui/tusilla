@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { SiteHeader, SiteFooter } from '@/components/Site';
 import { supabaseServer } from '@/lib/supabase/server';
-import { CATEGORIES } from '@/lib/format';
+import { CATEGORIES, money } from '@/lib/format';
+import { BRAND, SITE_HOST } from '@/lib/brand';
 
-const HOST = (process.env.NEXT_PUBLIC_SITE_URL || 'https://tusilla.do').replace(/^https?:\/\//, '');
+const HOST = SITE_HOST;
 
 export const dynamic = 'force-dynamic';
 
@@ -12,18 +13,10 @@ export default async function Home({ searchParams }) {
   const cat = CATEGORIES[searchParams?.categoria] ? searchParams.categoria : '';
 
   const supabase = supabaseServer();
-  let query = supabase
-    .from('businesses')
-    .select('slug,name,category,city,description,accent,logo_url')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false })
-    .limit(60);
-  if (cat) query = query.eq('category', cat);
-  if (q) {
-    const safe = q.replace(/[%,()]/g, ' ');
-    query = query.or(`name.ilike.%${safe}%,city.ilike.%${safe}%,description.ilike.%${safe}%`);
-  }
-  const { data: businesses } = await query;
+  const [{ data: businesses }, { data: plans }] = await Promise.all([
+    supabase.rpc('directory', { p_q: q.replace(/[%_]/g, ' '), p_category: cat }),
+    supabase.from('plans').select('id,name,price,max_staff,description').eq('is_active', true).order('sort').order('price'),
+  ]);
   const list = businesses || [];
   const filtered = Boolean(q || cat);
 
@@ -70,7 +63,7 @@ export default async function Home({ searchParams }) {
         <section className="wrap section" id="directorio">
           <div className="row between">
             <div className="stack tight">
-              <p className="eyebrow">{filtered ? 'Resultados' : 'Negocios en TuSilla'}</p>
+              <p className="eyebrow">{filtered ? 'Resultados' : `Negocios en ${BRAND}`}</p>
               <h2>{cat ? CATEGORIES[cat] : 'Dónde reservar'}</h2>
             </div>
             {filtered && <Link className="btn btn-sm" href="/#directorio">Ver todos</Link>}
@@ -126,7 +119,7 @@ export default async function Home({ searchParams }) {
                 un código QR en el mostrador.
               </p>
               <div className="row">
-                <Link className="btn btn-pri" href="/registro">Crear mi link gratis</Link>
+                <Link className="btn btn-pri" href="/registro">Probar 15 días gratis</Link>
                 <Link className="btn btn-ghost" href="/entrar" style={{ color: 'inherit', borderColor: 'currentColor' }}>Ya tengo cuenta</Link>
               </div>
             </div>
@@ -139,6 +132,29 @@ export default async function Home({ searchParams }) {
             </ul>
           </div>
         </section>
+
+        {plans?.length > 0 && (
+          <section className="wrap section" id="planes">
+            <div className="stack tight">
+              <p className="eyebrow">Planes</p>
+              <h2>15 días gratis. Después, según el tamaño de tu equipo.</h2>
+              <p className="muted">Todos los planes incluyen todo: reservas en línea, agenda, recordatorios por WhatsApp y reportes. Sin tarjeta para empezar.</p>
+            </div>
+            <div className="grid3">
+              {plans.map((p, i) => (
+                <div key={p.id} className="card" style={i === 1 ? { borderColor: 'var(--accent)', boxShadow: '0 0 0 1px var(--accent)' } : undefined}>
+                  <h3>{p.name}</h3>
+                  <p style={{ fontFamily: 'var(--f-display)', fontSize: '1.9rem', fontWeight: 800 }} className="num">
+                    {money(p.price)}<span className="muted small" style={{ fontFamily: 'var(--f-body)', fontWeight: 500 }}> /mes</span>
+                  </p>
+                  <p className="muted">{p.max_staff === 1 ? '1 profesional' : `Hasta ${p.max_staff} profesionales`}</p>
+                  {p.description && <p className="small">{p.description}</p>}
+                </div>
+              ))}
+            </div>
+            <p className="muted small">¿Más de {plans[plans.length - 1].max_staff} profesionales o varias sucursales? Escríbenos y te hacemos un precio.</p>
+          </section>
+        )}
 
         <section className="wrap section faq">
           <h2>Preguntas frecuentes</h2>

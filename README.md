@@ -22,7 +22,7 @@ Tiempo aproximado: 30 a 45 minutos. Necesitas cuentas gratis en **GitHub**, **Su
    - Nombre: `tusilla`. Región: **East US (North Virginia)**, la más cercana a RD.
    - Guarda la contraseña de la base de datos en un lugar seguro.
 2. Cuando termine de crearse, ve a **SQL Editor → New query**.
-3. Abre el archivo `supabase/schema.sql`, copia todo, pégalo y toca **Run**. Debe decir *Success*.
+3. Abre el archivo `supabase/schema.sql`, copia todo, pégalo y toca **Run**. Debe decir *Success*. Repite lo mismo con `supabase/002_planes_y_admin.sql` (planes, prueba gratis, pagos y administración).
 4. Ve a **Project Settings → API** y copia tres datos (los usarás en el paso 3):
    - **Project URL**
    - **anon public** key
@@ -86,7 +86,7 @@ Para que salgan solos:
    Hola {{1}}, tu cita en {{2}} quedó confirmada para el {{3}} a las {{4}}.
    Servicio: {{5}} con {{6}}.
    Para ver tu cita o cancelarla entra aquí: {{7}}
-   Gracias por reservar con TuSilla.
+   ¡Gracias por tu reserva!
    ```
    **`tusilla_recordatorio_24h`**
    ```
@@ -110,6 +110,19 @@ Meta cobra cada mensaje de plantilla (centavos de dólar por mensaje, según el 
 Compra el dominio (por ejemplo en NIC.do para `.do`, o en Namecheap o Cloudflare para `.app` o `.com`). En Vercel → **Settings → Domains** agrégalo y sigue las instrucciones de DNS. Luego actualiza `NEXT_PUBLIC_SITE_URL`, el **Site URL** y las **Redirect URLs** de Supabase, y el link de `cron.sql`.
 
 ---
+
+## Administración de la plataforma
+
+- Panel en `/admin`: resumen de ingresos, negocios en prueba, vencidos, registro de pagos, planes y ajustes de cobro.
+- Para dar acceso de administrador a una cuenta (después de que se registre), en Supabase → SQL Editor:
+  ```sql
+  insert into platform_admins (user_id) select id from auth.users where email = 'correo@ejemplo.com';
+  ```
+- Cada negocio nuevo tiene una prueba gratis (15 días por defecto). Al vencer, tiene unos días de gracia y luego su página deja de recibir reservas hasta que registres el pago en `/admin/negocios`.
+
+## Cambiar el nombre de la plataforma
+
+En Vercel agrega `NEXT_PUBLIC_BRAND_NAME` con el nombre nuevo y haz Redeploy. El nombre sale en la portada, el panel, la pestaña del navegador y los mensajes manuales. Las plantillas de WhatsApp no llevan el nombre, así que no hay que volver a aprobarlas.
 
 ## Trabajar en el código en tu computadora
 
