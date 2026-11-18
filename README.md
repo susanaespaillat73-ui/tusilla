@@ -83,15 +83,20 @@ Para que salgan solos:
 
    **`tusilla_cita_confirmada`**
    ```
-   Hola {{1}}, tu cita en {{2}} quedó confirmada para el {{3}} a las {{4}}: {{5}} con {{6}}. Para ver o cancelar tu cita: {{7}}
+   Hola {{1}}, tu cita en {{2}} quedó confirmada para el {{3}} a las {{4}}.
+   Servicio: {{5}} con {{6}}.
+   Para ver tu cita o cancelarla entra aquí: {{7}}
+   Gracias por reservar con TuSilla.
    ```
    **`tusilla_recordatorio_24h`**
    ```
-   Hola {{1}}, te recordamos tu cita de mañana en {{2}}: {{3}} a las {{4}} con {{5}}. Si no puedes asistir, cancela aquí: {{6}}
+   Hola {{1}}, te recordamos tu cita de mañana en {{2}}: {{3}} a las {{4}} con {{5}}.
+   Si no puedes asistir, cancela aquí para liberar el espacio: {{6}}
+   ¡Te esperamos!
    ```
    **`tusilla_recordatorio_2h`**
    ```
-   {{1}}, te esperamos hoy a las {{2}} en {{3}} ({{4}}). ¡Nos vemos!
+   Hola {{1}}, te esperamos hoy a las {{2}} en {{3}} ({{4}}). ¡Nos vemos pronto!
    ```
    Si Meta te pide otro idioma (`es_MX`, `es_ES`), pon ese código en la variable `WA_TPL_LANG`.
 3. Crea un **token permanente** (System User en Business Settings, con permiso `whatsapp_business_messaging`) y copia el **Phone number ID**.

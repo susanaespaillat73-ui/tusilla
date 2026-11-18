@@ -72,7 +72,10 @@ export default function Recordatorios() {
       </div>
 
       {status && (status.configured ? (
-        <div className="note ok"><b>Envío automático activo.</b> Los mensajes salen solos por WhatsApp. Abajo puedes ver el estado de cada uno.</div>
+        <>
+          <div className="note ok"><b>Envío automático activo.</b> Los mensajes salen solos por WhatsApp. Abajo puedes ver el estado de cada uno.</div>
+          <TestSend defaultPhone={biz.phone} />
+        </>
       ) : (
         <div className="note warn">
           <b>Envío automático aún no conectado.</b> Mientras tanto, toca <b>Enviar</b> en cada cita: se abre WhatsApp con el mensaje listo para mandarlo desde tu número.
@@ -150,5 +153,40 @@ export default function Recordatorios() {
       </div>
       {toast}
     </>
+  );
+}
+
+function TestSend({ defaultPhone }) {
+  const [phone, setPhone] = useState(fmtPhone(defaultPhone || ''));
+  const [kind, setKind] = useState('confirm');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  async function send(e) {
+    e.preventDefault();
+    setBusy(true); setMsg(null);
+    const res = await fetch('/api/whatsapp-test', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, kind }),
+    }).catch(() => null);
+    const json = res ? await res.json().catch(() => ({})) : {};
+    setBusy(false);
+    setMsg(res && res.ok ? { ok: true, t: `Enviado. Revisa el WhatsApp del ${phone}.` } : { ok: false, t: json.error || 'No se pudo enviar.' });
+  }
+
+  return (
+    <form className="card" onSubmit={send}>
+      <h3>Probar el envío</h3>
+      <p className="muted small">Manda una plantilla con datos de ejemplo a tu propio número para comprobar que llega.</p>
+      <div className="row">
+        <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" aria-label="Número para la prueba" style={{ maxWidth: 200 }} />
+        <select value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Plantilla" style={{ width: 'auto' }}>
+          <option value="confirm">Confirmación</option>
+          <option value="r24">24 h antes</option>
+          <option value="r2">2 h antes</option>
+        </select>
+        <button className="btn btn-wa btn-sm" type="submit" disabled={busy}>{busy ? 'Enviando…' : 'Enviar prueba'}</button>
+      </div>
+      {msg && <p className={msg.ok ? 'ok-msg' : 'err'}>{msg.t}</p>}
+    </form>
   );
 }
